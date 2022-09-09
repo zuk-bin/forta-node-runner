@@ -1,0 +1,22 @@
+#!/bin/bash
+FORTA_PASSPHRASE=HelloWorld
+
+NODE_NAME=$1
+[ "$1" = "" ] && echo "Usage: bin/run-node node-abc-123" && exit 1
+FORTA_DIR="./keys/${NODE_NAME}"
+
+docker run \
+  --detach \
+  --env FORTA_PASSPHRASE=$FORTA_PASSPHRASE \
+  --privileged \
+  --name forta-$NODE_NAME \
+  --mount type=bind,src=./node-runner,dst=/node-runner \
+  --mount type=bind,src=$FORTA_DIR,dst=/keys \
+  docker:dind 
+
+ERR=1
+while [ $ERR -ne 0 ]; do
+  docker exec -it forta-$NODE_NAME /bin/sh -c "cd /node-runner && docker-compose up"
+  ERR=$?
+  read -p "node is not ready yet, retry"
+done
