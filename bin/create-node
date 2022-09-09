@@ -1,0 +1,47 @@
+#!/bin/bash
+FORTA_PASSPHRASE=HelloWorld
+WALLET_ADDRESS=12345
+
+NODE_NAME=$1
+[ "$1" = "" ] && echo "Usage: bin/create-node node-abc-123" && exit 1
+FORTA_DIR="./keys/${NODE_NAME}"
+
+export FORTA_DIR=$FORTA_DIR
+export FORTA_PASSPHRASE=$FORTA_PASSPHRASE
+
+function failed() {
+  echo $1
+  rm $FORTA_DIR/.keys/UTC--*
+  rm $FORTA_DIR/config.yml
+  rmdir $FORTA_DIR/.keys
+  rmdir $FORTA_DIR
+  exit 1
+}
+
+[ -d $FORTA_DIR ] && echo "This node already exists" && exit 1
+mkdir $FORTA_DIR
+
+bin/forta init | grep "Successfully initialized" \
+  || { failed "Forta init failed"; }
+
+cp ./config.yml $FORTA_DIR \
+  || { failed "Can't copy config"; } 
+
+bin/forta account address || failed "Failed to get node address"
+
+NODE_KEYS=`cat $FORTA_DIR/.keys/UTC--*`
+[ "$NODE_KEYS" = "" ] && failed "Missing node keys"
+
+ERR=1
+while [ $ERR -ne 0 ]; do
+  bin/forta register --owner-address "$WALLET_ADDRESS"
+  ERR=$?
+  read -p "Press enter when ready"
+done
+
+echo "---" >> nodes.txt
+echo $NODE_NAME >> nodes.txt
+echo $NODE_KEYS >> nodes.txt
+
+echo "-----"
+echo "Done!"

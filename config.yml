@@ -1,0 +1,13 @@
+chainId: 1
+
+scan:
+  jsonRpc:
+    url: http://65.108.236.160:8545/
+
+trace:
+  jsonRpc:
+    url: http://65.108.236.160:8545/
+
+registry:
+ jsonRpc:
+   url: https://rpc.ankr.com/polygon

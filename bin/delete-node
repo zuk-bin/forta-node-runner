@@ -1,0 +1,5 @@
+#!/bin/bash
+NODE_NAME=$1
+[ "$1" = "" ] && echo "Usage: bin/delete-node node-abc-123" && exit 1
+docker stop forta-$NODE_NAME
+docker container rm forta-$NODE_NAME
